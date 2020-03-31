@@ -57,22 +57,31 @@ void show_color(byte color) {
     analogWrite(6, red);
     analogWrite(5, green);
     analogWrite(3, blue);
-    delay(10);
+    delay(0);
   }
-  delay(1370);
+  delay(0);
 }
 
 void save_to_eeprom(){
-  long save = cur >> 11; //divide by 2048
+  long save = (cur >> 11); //divide by 2048
+  Serial.print("save: ");
+  Serial.print(save);
   byte save_l = save & 255;
   save = save >> 8;
   byte save_h = save & 255;
   EEPROM.write(2*addr, save_h);
   EEPROM.write((2*addr) + 1, save_l);
+  
+  byte start_h = EEPROM.read(2*addr);
+  byte start_l = EEPROM.read((2*addr) + 1);
+  long start = (((long)start_h << 8) | (long)start_l);
+  Serial.print("saved value: ");
+  Serial.println(start);
+  
 }
 
 void setup() {
-  //  Serial.begin(9600);
+  Serial.begin(9600);
   /*
    * Run this ONCE (every time you change EEPROM address)
    * EEPROM.write(2*addr, 0);
@@ -80,8 +89,9 @@ void setup() {
    */
   
   byte start_h = EEPROM.read(2*addr);
-  byte start_l = EEPROM.read(2*addr + 1);
-  long start = ((start_h << 8) + start_l);
+  byte start_l = EEPROM.read((2*addr) + 1);
+  long start = (((long)start_h << 8) | (long)start_l);
+  Serial.println(start);
   cur = start * 2048L; //(2048 = 2^11)
 
   n = 0;
@@ -111,9 +121,9 @@ void loop() {
   noInterrupts();
     n = pfac() - 1; 
   interrupts();
-  
+  //Serial.println(cur);
   cur = (cur + 1L) & (max_val - 1L); // [0, 33,554,431] (will be less than 2^25, so all factorizations will be at most 24 long)
-  if(cur & 2047L == 0){ // same thing as cur % 2048 (2047L = 0b0000 07ff)
+  if(cur % 2048L == 0L){ // same thing as cur % 2048 (2047L = 0b0000 07ff)
     save_to_eeprom();
   }
   

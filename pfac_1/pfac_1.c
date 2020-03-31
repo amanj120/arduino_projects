@@ -107,19 +107,15 @@ void setup() {
 
 void loop() {
   digitalWrite(4, LOW);
-  
   noInterrupts();
-    n = pfac() - 1; 
-  interrupts();
-  
-  cur = (cur + 1L) & (max_val - 1L); // [0, 33,554,431] (will be less than 2^25, so all factorizations will be at most 24 long)
-  if(cur & 2047L == 0){ // same thing as cur % 2048 (2047L = 0b0000 07ff)
+  n = pfac() - 1;
+  interrupts(); 
+  cur = (cur + 1L) % max_val; // [0, 33,554,431] (will be less than 2^25, so all factorizations will be at most 24 long)
+  if(cur & 2048L == 0){
     save_to_eeprom();
   }
-  
   show_color(cl[n]);
-  
-  //printData();
+  //  printData();
 }
 
 /*
@@ -137,4 +133,3 @@ void printData(){
  Serial.print(", ");
  Serial.println(blue);
 }
-*/
